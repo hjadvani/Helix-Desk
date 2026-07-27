@@ -1,0 +1,57 @@
+import * as React from "react"
+import { cn } from "@/lib/utils"
+
+export function PageContainer({
+  children,
+  className,
+}: {
+  children: React.ReactNode
+  className?: string
+}) {
+  return <div className={cn("mx-auto w-full max-w-[1400px] px-4 py-6 md:px-6 lg:px-8", className)}>{children}</div>
+}
+
+export function PageHeader({
+  title,
+  description,
+  actions,
+}: {
+  title: string
+  description?: string
+  actions?: React.ReactNode
+}) {
+  return (
+    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+      <div className="space-y-1">
+        <h1 className="font-heading text-2xl font-semibold tracking-tight text-balance">{title}</h1>
+        {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
+      </div>
+      {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
+    </div>
+  )
+}
+
+export function EmptyState({
+  icon: Icon,
+  title,
+  description,
+  action,
+}: {
+  icon: React.ComponentType<{ className?: string }>
+  title: string
+  description?: string
+  action?: React.ReactNode
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border px-6 py-16 text-center">
+      <span className="flex size-11 items-center justify-center rounded-full bg-muted text-muted-foreground">
+        <Icon className="size-5" />
+      </span>
+      <div className="space-y-1">
+        <p className="font-medium text-foreground">{title}</p>
+        {description ? <p className="mx-auto max-w-sm text-sm text-muted-foreground text-pretty">{description}</p> : null}
+      </div>
+      {action ? <div className="mt-1">{action}</div> : null}
+    </div>
+  )
+}
