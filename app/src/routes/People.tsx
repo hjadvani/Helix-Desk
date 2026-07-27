@@ -31,7 +31,7 @@ export default function People() {
     return () => clearTimeout(timer)
   }, [searchInput])
 
-  const { rows, columns, total, isLoading, error, refetch, formatCell } =
+  const { rows, columns, total, isLoading, error, refetch, formatCell, rawResponse } =
     useAutomationTable(search)
 
   const columnCount = Math.max(columns.length, 1)
@@ -122,6 +122,17 @@ export default function People() {
           </TableBody>
         </Table>
       </div>
+
+      {!isLoading && !error && rows.length === 0 && rawResponse !== undefined && (
+        <details className="rounded-lg border border-border bg-muted/40 p-4 text-sm">
+          <summary className="cursor-pointer font-medium text-foreground">
+            No rows parsed — inspect the raw automation response
+          </summary>
+          <pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap break-words text-xs text-muted-foreground">
+            {JSON.stringify(rawResponse, null, 2)}
+          </pre>
+        </details>
+      )}
     </div>
   )
 }

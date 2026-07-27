@@ -18,13 +18,57 @@ export type TableRow = {
   values: Record<string, unknown>
 }
 
-type AutomationObject = { properties?: Record<string, unknown> }
-type AutomationBody = { objects?: AutomationObject[]; total?: number }
-
 function toDisplayValue(value: unknown): string {
   if (value === null || value === undefined) return ''
   if (typeof value === 'object') return JSON.stringify(value)
   return String(value)
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+// The automation's payload can be nested a few ways depending on how it returns.
+// Walk the common envelopes to find the array of record objects.
+function findObjectsArray(root: unknown): Record<string, unknown>[] {
+  const seen = new Set<unknown>()
+  const queue: unknown[] = [root]
+  while (queue.length > 0) {
+    const node = queue.shift()
+    if (!node || seen.has(node)) continue
+    seen.add(node)
+    if (!isRecord(node)) continue
+
+    const objects = node.objects
+    if (Array.isArray(objects) && objects.every(isRecord)) {
+      return objects as Record<string, unknown>[]
+    }
+    for (const value of Object.values(node)) {
+      if (isRecord(value) || Array.isArray(value)) queue.push(value)
+    }
+  }
+  return []
+}
+
+function findTotal(root: unknown): number | undefined {
+  const queue: unknown[] = [root]
+  const seen = new Set<unknown>()
+  while (queue.length > 0) {
+    const node = queue.shift()
+    if (!node || seen.has(node) || !isRecord(node)) continue
+    seen.add(node)
+    if (typeof node.total === 'number') return node.total
+    for (const value of Object.values(node)) {
+      if (isRecord(value)) queue.push(value)
+    }
+  }
+  return undefined
+}
+
+// A record may carry its fields under `.properties` or directly at the top level.
+function extractFields(obj: Record<string, unknown>): Record<string, unknown> {
+  if (isRecord(obj.properties)) return obj.properties
+  return obj
 }
 
 export function useAutomationTable(search: string) {
@@ -50,14 +94,13 @@ export function useAutomationTable(search: string) {
     options: {},
   })
 
-  const body = (data?.response as { body?: AutomationBody } | undefined)?.body
-  const objects = body?.objects ?? []
+  const objects = findObjectsArray(data)
 
   const rows: TableRow[] = objects.map((obj, index) => {
-    const props = obj.properties ?? {}
+    const fields = extractFields(obj)
     return {
-      id: toDisplayValue(props.id) || String(index),
-      values: props,
+      id: toDisplayValue(fields.id ?? obj.id) || String(index),
+      values: fields,
     }
   })
 
@@ -71,10 +114,11 @@ export function useAutomationTable(search: string) {
   return {
     rows,
     columns,
-    total: body?.total ?? rows.length,
+    total: findTotal(data) ?? rows.length,
     isLoading,
     error,
     refetch,
+    rawResponse: data,
     formatCell: toDisplayValue,
   }
 }
