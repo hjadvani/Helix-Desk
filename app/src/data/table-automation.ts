@@ -71,7 +71,7 @@ function extractFields(obj: Record<string, unknown>): Record<string, unknown> {
   return obj
 }
 
-export function useAutomationTable(search: string) {
+export function useAutomationTable() {
   const { data, isLoading, error, refetch } = useExecuteWorkflowNode({
     context: {
       appName: 'callables',
@@ -85,7 +85,7 @@ export function useAutomationTable(search: string) {
       runtimeConnections: {},
       parameters: {
         __internals__: INTERNALS,
-        searchQuery: search,
+        searchQuery: '',
         pageSize: PAGE_SIZE,
         offset: OFFSET,
       },

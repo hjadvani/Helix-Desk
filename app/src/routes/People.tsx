@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { RefreshCw, Search } from 'lucide-react'
 import { useAutomationTable } from '@/data/table-automation'
 import { Button } from '@/components/ui/button'
@@ -14,7 +14,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 
-const SEARCH_DEBOUNCE_MS = 350
 const SKELETON_ROWS = 6
 
 function humanizeColumn(key: string): string {
@@ -23,16 +22,17 @@ function humanizeColumn(key: string): string {
 }
 
 export default function People() {
-  const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
 
-  useEffect(() => {
-    const timer = setTimeout(() => setSearch(searchInput), SEARCH_DEBOUNCE_MS)
-    return () => clearTimeout(timer)
-  }, [searchInput])
-
   const { rows, columns, total, isLoading, error, refetch, formatCell, rawResponse } =
-    useAutomationTable(search)
+    useAutomationTable()
+
+  const query = search.trim().toLowerCase()
+  const visibleRows = query
+    ? rows.filter((row) =>
+        columns.some((col) => formatCell(row.values[col]).toLowerCase().includes(query)),
+      )
+    : rows
 
   const columnCount = Math.max(columns.length, 1)
 
@@ -45,7 +45,9 @@ export default function People() {
           </h1>
           <p className="max-w-prose text-sm text-muted-foreground">
             Live data from the connected automation.
-            {!isLoading && !error ? ` ${total} record${total === 1 ? '' : 's'}.` : ''}
+            {!isLoading && !error
+              ? ` ${query ? `${visibleRows.length} of ${total}` : total} record${total === 1 ? '' : 's'}.`
+              : ''}
           </p>
         </div>
         <Button variant="secondary" onClick={() => refetch()} disabled={isLoading}>
@@ -57,8 +59,8 @@ export default function People() {
       <div className="relative max-w-sm">
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
           placeholder="Search…"
           aria-label="Search records"
           className="pl-9"
@@ -97,20 +99,20 @@ export default function People() {
               </TableRow>
             )}
 
-            {!isLoading && !error && rows.length === 0 && (
+            {!isLoading && !error && visibleRows.length === 0 && (
               <TableRow>
                 <TableCell
                   colSpan={columnCount}
                   className="py-12 text-center text-sm text-muted-foreground"
                 >
-                  {search ? `No records match “${search}”.` : 'The automation returned no records.'}
+                  {query ? `No records match “${search}”.` : 'The automation returned no records.'}
                 </TableCell>
               </TableRow>
             )}
 
             {!isLoading &&
               !error &&
-              rows.map((row) => (
+              visibleRows.map((row) => (
                 <TableRow key={row.id}>
                   {columns.map((col) => (
                     <TableCell key={col} className="text-muted-foreground">
