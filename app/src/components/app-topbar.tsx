@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { BackgroundControl } from "@/components/background-control"
 import { useUiStore } from "@/lib/ui-store"
 import { agents, useStore } from "@/lib/store"
 import { agentById } from "@/lib/lookups"
@@ -65,6 +66,8 @@ export function AppTopbar({ onOpenMobileNav }: AppTopbarProps) {
           <Plus className="size-4" />
           New ticket
         </Button>
+
+        <BackgroundControl />
 
         <Button
           variant="ghost"
