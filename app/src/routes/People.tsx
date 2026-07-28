@@ -41,8 +41,8 @@ export default function People() {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground">
-            People
-          </h1>
+                      Table
+                    </h1>
           <p className="max-w-prose text-sm text-muted-foreground">
             Live data from the connected automation.
             {!isLoading && !error
@@ -55,7 +55,6 @@ export default function People() {
           Refresh
         </Button>
       </header>
-
       <div className="relative max-w-sm">
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
@@ -66,7 +65,6 @@ export default function People() {
           className="pl-9"
         />
       </div>
-
       <div className="overflow-hidden rounded-xl border border-border bg-card">
         <Table>
           <TableHeader>
@@ -124,7 +122,6 @@ export default function People() {
           </TableBody>
         </Table>
       </div>
-
       {!isLoading && !error && rows.length === 0 && rawResponse !== undefined && (
         <details className="rounded-lg border border-border bg-muted/40 p-4 text-sm">
           <summary className="cursor-pointer font-medium text-foreground">
@@ -136,5 +133,5 @@ export default function People() {
         </details>
       )}
     </div>
-  )
+  );
 }
